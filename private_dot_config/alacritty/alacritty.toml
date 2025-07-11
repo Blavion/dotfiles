@@ -1,0 +1,6 @@
+[window]
+padding = {x = 32, y = 32}
+decorations = "None"
+opacity = 0.6
+blur = true
+startup_mode = "Maximized"
