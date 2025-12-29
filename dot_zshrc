@@ -59,6 +59,17 @@ export FZF_DEFAULT_OPTS='--height 60% --tmux center,60% --layout reverse --borde
 
 
 eval "$(zoxide init zsh)"
+
+# SSH Agent
+export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
+
+cat << EOF > ~/.config/plasma-workspace/env/ssh-agent-env.sh
+#!/bin/zsh
+export SSH_AUTH_SOCK=\$XDG_RUNTIME_DIR/ssh-agent.socket
+EOF
+
+
+
 # For a full list of active aliases, run `alias`.
 #
 # aliases
