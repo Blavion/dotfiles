@@ -1,50 +1,78 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
+export EDITOR="nvim"
+export SYSTEMD_EDITOR="nvim"
 
-ZSH_THEME="robbyrussell"
 
-# Uncomment one of the following lines to change the auto-update behavior
- zstyle ':omz:update' mode auto      # update automatically without asking
-# Uncomment the following line to change how often to auto-update (in days).
- zstyle ':omz:update' frequency 13
+ZSH_THEME="powerlevel10k/powerlevel10k"
 
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
+# History
+HISTFILE=$HOME/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
 
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
+setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt EXTENDED_HISTORY
+setopt AUTO_CD
+setopt INTERACTIVE_COMMENTS
+setopt NO_BEEP
 
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
+# Better navigation
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_SILENT
 
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
+# Completion
+autoload -Uz compinit
+compinit
 
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
- HIST_STAMPS="dd/mm/yyyy"
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# ----------------------------
+# Prompt
+# ----------------------------
+autoload -Uz colors && colors
+
+setopt PROMPT_SUBST
+
+autoload -Uz vcs_info
+precmd() { vcs_info }
+
+zstyle ':vcs_info:git:*' formats ' %F{213}[%b]%f'
+zstyle ':vcs_info:*' enable git
+
+PROMPT='%F{81}%n%f@%F{214}%m%f %F{141}%~%f${vcs_info_msg_0_}
+%F{220}❯%f '
+
+zstyle ':omz:update' mode auto
+#how often to auto-update (in days).
+zstyle ':omz:update' frequency 13
+
+ENABLE_CORRECTION="true"
+
+HIST_STAMPS="dd/mm/yyyy"
  export LC_ALL=C.UTF-8
 
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git 
+  zsh-autosuggestions
+  zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
  export LANG=en_US.UTF-8
 
 # Set up fzf key bindings and fuzzy completion
@@ -58,7 +86,6 @@ export FZF_CTRL_T_OPTS="
 export FZF_DEFAULT_OPTS='--height 60% --tmux center,60% --layout reverse --border top'
 
 
-eval "$(zoxide init zsh)"
 
 # SSH Agent
 export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
@@ -71,12 +98,9 @@ EOF
 
 
 # For a full list of active aliases, run `alias`.
-#
 # aliases
-
 alias ohmyzsh="nvim ~/.oh-my-zsh"
 alias vim="nvim"
-alias brave="flatpak run com.brave.Browser"
 alias zen="flatpak run app.zen_browser.zen"
 alias tor="flatpak run ?ct.torbrowser-launcher"
 alias firefox="flatpak run app.zen_browser.zen" 
@@ -84,174 +108,32 @@ alias youtube="flatpak run io.freetubeapp.Freetube"
 alias freetube="flatpak run io.freetubeapp.Freetube"
 alias brave="flatpak run com.brave.Browser"
 alias cat="bat -p"
-alias ls="exa"
 alias curl="xh"
 alias ranger="yazi"
 alias lf="ranger"
 alias grep="rg"
-alias cd="z"
 alias tree="exa --tree"
 alias docker="podman"
-alias lcd="zi"
 alias lgit="lazygit"
 alias lg="lazygit"
 alias zed="zeditor"
 alias find="fd"
 alias sed="sd"
+alias q="exit"
 
-export EDITOR="nvim"
-export SYSTEMD_EDITOR="nvim"
 
-# shellcheck shell=bash
 
-# =============================================================================
-#
-# Utility functions for zoxide.
-#
-
-# pwd based on the value of _ZO_RESOLVE_SYMLINKS.
-function __zoxide_pwd() {
-    \builtin pwd -L
-}
-
-# cd + custom logic based on the value of _ZO_ECHO.
-function __zoxide_cd() {
-    # shellcheck disable=SC2164
-    \builtin cd -- "$@"
-}
-
-# =============================================================================
-#
-# Hook configuration for zoxide.
-#
-
-# Hook to add new entries to the database.
-function __zoxide_hook() {
-    # shellcheck disable=SC2312
-    \command zoxide add -- "$(__zoxide_pwd)"
-}
-
-# Initialize hook.
-\builtin typeset -ga precmd_functions
-\builtin typeset -ga chpwd_functions
-# shellcheck disable=SC2034,SC2296
-precmd_functions=("${(@)precmd_functions:#__zoxide_hook}")
-# shellcheck disable=SC2034,SC2296
-chpwd_functions=("${(@)chpwd_functions:#__zoxide_hook}")
-chpwd_functions+=(__zoxide_hook)
-
-# Report common issues.
-function __zoxide_doctor() {
-    [[ ${_ZO_DOCTOR:-1} -ne 0 ]] || return 0
-    [[ ${chpwd_functions[(Ie)__zoxide_hook]:-} -eq 0 ]] || return 0
-
-    _ZO_DOCTOR=0
-    \builtin printf '%s\n' \
-        'zoxide: detected a possible configuration issue.' \
-        'Please ensure that zoxide is initialized right at the end of your shell configuration file (usually ~/.zshrc).' \
-        '' \
-        'If the issue persists, consider filing an issue at:' \
-        'https://github.com/ajeetdsouza/zoxide/issues' \
-        '' \
-        'Disable this message by setting _ZO_DOCTOR=0.' \
-        '' >&2
-}
-
-# =============================================================================
-#
-# When using zoxide with --no-cmd, alias these internal functions as desired.
-#
-
-# Jump to a directory using only keywords.
-function __zoxide_z() {
-    __zoxide_doctor
-    if [[ "$#" -eq 0 ]]; then
-        __zoxide_cd ~
-    elif [[ "$#" -eq 1 ]] && { [[ -d "$1" ]] || [[ "$1" = '-' ]] || [[ "$1" =~ ^[-+][0-9]$ ]]; }; then
-        __zoxide_cd "$1"
-    elif [[ "$#" -eq 2 ]] && [[ "$1" = "--" ]]; then
-        __zoxide_cd "$2"
-    else
-        \builtin local result
-        # shellcheck disable=SC2312
-        result="$(\command zoxide query --exclude "$(__zoxide_pwd)" -- "$@")" && __zoxide_cd "${result}"
-    fi
-}
-
-# Jump to a directory using interactive search.
-function __zoxide_zi() {
-    __zoxide_doctor
-    \builtin local result
-    result="$(\command zoxide query --interactive -- "$@")" && __zoxide_cd "${result}"
-}
-
-# =============================================================================
-#
-# Commands for zoxide. Disable these using --no-cmd.
-#
-
-function z() {
-    __zoxide_z "$@"
-}
-
-function zi() {
-    __zoxide_zi "$@"
-}
-
-# Completions.
-if [[ -o zle ]]; then
-    __zoxide_result=''
-
-    function __zoxide_z_complete() {
-        # Only show completions when the cursor is at the end of the line.
-        # shellcheck disable=SC2154
-        [[ "${#words[@]}" -eq "${CURRENT}" ]] || return 0
-
-        if [[ "${#words[@]}" -eq 2 ]]; then
-            # Show completions for local directories.
-            _cd -/
-
-        elif [[ "${words[-1]}" == '' ]]; then
-            # Show completions for Space-Tab.
-            # shellcheck disable=SC2086
-            __zoxide_result="$(\command zoxide query --exclude "$(__zoxide_pwd || \builtin true)" --interactive -- ${words[2,-1]})" || __zoxide_result=''
-
-            # Set a result to ensure completion doesn't re-run
-            compadd -Q ""
-
-            # Bind '\e[0n' to helper function.
-            \builtin bindkey '\e[0n' '__zoxide_z_complete_helper'
-            # Sends query device status code, which results in a '\e[0n' being sent to console input.
-            \builtin printf '\e[5n'
-
-            # Report that the completion was successful, so that we don't fall back
-            # to another completion function.
-            return 0
-        fi
-    }
-
-    function __zoxide_z_complete_helper() {
-        if [[ -n "${__zoxide_result}" ]]; then
-            # shellcheck disable=SC2034,SC2296
-            BUFFER="z ${(q-)__zoxide_result}"
-            __zoxide_result=''
-            \builtin zle reset-prompt
-            \builtin zle accept-line
-        else
-            \builtin zle reset-prompt
-        fi
-    }
-    \builtin zle -N __zoxide_z_complete_helper
-
-    [[ "${+functions[compdef]}" -ne 0 ]] && \compdef __zoxide_z_complete z
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --group-directories-first --icons'
+  alias ll='eza -lh --group-directories-first --icons'
+  alias la='eza -lha --group-directories-first --icons'
+  alias lt='eza --tree --level=2 --icons'
+else
+  alias ls='ls --color=auto'
+  alias ll='ls -lah --color=auto'
+  alias la='ls -A --color=auto'
 fi
 
-# =============================================================================
-#
-# To initialize zoxide, add this to your shell configuration file (usually ~/.zshrc):
-#
-# eval "$(zoxide init zsh)"
-#
 # PNPM
 export PNPM_HOME="/home/rasmus/.local/share/pnpm"
 case ":$PATH:" in
@@ -259,3 +141,32 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+
+# helper functions
+extract() {
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2) tar xjf "$1" ;;
+      *.tar.gz)  tar xzf "$1" ;;
+      *.bz2)     bunzip2 "$1" ;;
+      *.rar)     unrar x "$1" ;;
+      *.gz)      gunzip "$1" ;;
+      *.tar)     tar xf "$1" ;;
+      *.tbz2)    tar xjf "$1" ;;
+      *.tgz)     tar xzf "$1" ;;
+      *.zip)     unzip "$1" ;;
+      *.7z)      7z x "$1" ;;
+      *)         echo "Cannot extract: $1" ;;
+    esac
+  else
+    echo "File not found: $1"
+  fi
+}
+
+# Quick backup of a file
+bak() {
+  cp "$1" "$1.bak"
+}
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
